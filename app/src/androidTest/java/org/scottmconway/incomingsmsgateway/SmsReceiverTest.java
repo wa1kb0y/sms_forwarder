@@ -33,10 +33,7 @@ public class SmsReceiverTest {
         Mockito.verify(receiver, Mockito.times(0))
                 .callWebHook(
                         Mockito.any(ForwardingConfig.class),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyLong()
+                        Mockito.any(WebhookMessage.class)
                 );
     }
 
@@ -49,10 +46,7 @@ public class SmsReceiverTest {
         Mockito.verify(receiver, Mockito.times(1))
                 .callWebHook(
                         Mockito.any(ForwardingConfig.class),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyLong()
+                        Mockito.any(WebhookMessage.class)
                 );
     }
 
@@ -65,10 +59,7 @@ public class SmsReceiverTest {
         Mockito.verify(receiver, Mockito.times(1))
                 .callWebHook(
                         Mockito.any(ForwardingConfig.class),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyLong()
+                        Mockito.any(WebhookMessage.class)
                 );
     }
 
@@ -81,10 +72,7 @@ public class SmsReceiverTest {
         Mockito.verify(receiver, Mockito.times(0))
                 .callWebHook(
                         Mockito.any(ForwardingConfig.class),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyLong()
+                        Mockito.any(WebhookMessage.class)
                 );
     }
 
@@ -97,10 +85,7 @@ public class SmsReceiverTest {
         Mockito.verify(receiver, Mockito.times(1))
                 .callWebHook(
                         Mockito.any(ForwardingConfig.class),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyLong()
+                        Mockito.any(WebhookMessage.class)
                 );
     }
 
@@ -137,10 +122,7 @@ public class SmsReceiverTest {
         Mockito.doNothing().when(receiver)
                 .callWebHook(
                         Mockito.any(ForwardingConfig.class),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyString(),
-                        Mockito.anyLong()
+                        Mockito.any(WebhookMessage.class)
                 );
 
         return receiver;

@@ -65,6 +65,7 @@ public class ForwardingConfigDialog {
         final CheckBox chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
         chunkedModeCheckbox.setChecked(true);
 
+        prepareRequestMethodSpinner(view, "POST");
         prepareSimSelector(context, view, 0);
         prepareAttachmentFields(view, false, "", "PUT",
                 ForwardingConfig.getDefaultAttachmentHeaders());
@@ -124,6 +125,8 @@ public class ForwardingConfigDialog {
         final CheckBox chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
         chunkedModeCheckbox.setChecked(config.getChunkedMode());
 
+        prepareRequestMethodSpinner(view, config.getRequestMethod());
+
         prepareAttachmentFields(view, config.getAttachmentUploadEnabled(),
                 config.getAttachmentUrl(), config.getAttachmentMethod(),
                 config.getAttachmentHeaders());
@@ -170,7 +173,7 @@ public class ForwardingConfigDialog {
             return null;
         }
         try {
-            new URL(url);
+            new URL(stripPlaceholders(url));
         } catch (MalformedURLException e) {
             urlInput.setError(context.getString(R.string.error_wrong_url));
             return null;
@@ -211,6 +214,9 @@ public class ForwardingConfigDialog {
         final CheckBox chunkedModeCheckbox = view.findViewById(R.id.input_chunked_mode);
         boolean chunkedMode = chunkedModeCheckbox.isChecked();
 
+        Spinner requestMethodSpinner = view.findViewById(R.id.input_request_method);
+        String requestMethod = (String) requestMethodSpinner.getSelectedItem();
+
         config.setSender(sender);
         config.setUrl(url);
         config.setTemplate(template);
@@ -218,6 +224,7 @@ public class ForwardingConfigDialog {
         config.setRetriesNumber(retriesNum);
         config.setIgnoreSsl(ignoreSsl);
         config.setChunkedMode(chunkedMode);
+        config.setRequestMethod(requestMethod);
 
         // Attachment upload fields
         final CheckBox attachmentCheckbox = view.findViewById(R.id.input_attachment_upload_enabled);
@@ -232,7 +239,7 @@ public class ForwardingConfigDialog {
                 return null;
             }
             try {
-                new URL(attachmentUrl);
+                new URL(stripPlaceholders(attachmentUrl));
             } catch (MalformedURLException e) {
                 attachmentUrlInput.setError(context.getString(R.string.error_wrong_attachment_url));
                 return null;
@@ -254,6 +261,16 @@ public class ForwardingConfigDialog {
         }
 
         return config;
+    }
+
+    private void prepareRequestMethodSpinner(View view, String selected) {
+        Spinner methodSpinner = view.findViewById(R.id.input_request_method);
+        String[] methods = {"POST", "PUT"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(context,
+                android.R.layout.simple_spinner_item, methods);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        methodSpinner.setAdapter(adapter);
+        methodSpinner.setSelection("PUT".equals(selected) ? 1 : 0);
     }
 
     private void prepareAttachmentFields(View view, boolean enabled, String url,
@@ -328,6 +345,10 @@ public class ForwardingConfigDialog {
             (byte) 0xae, 0x42, 0x60, (byte) 0x82
     };
 
+    private static String stripPlaceholders(String input) {
+        return input.replaceAll("%[a-zA-Z]+%", "placeholder");
+    }
+
     private void testConfig(ForwardingConfig config) {
         if (config == null) {
             return;
@@ -341,10 +362,11 @@ public class ForwardingConfigDialog {
 
             // send the normal templated text webhook
             String payload = config.prepareMessage(testMessage);
-            Request request = new Request(config.getUrl(), payload);
+            Request request = new Request(config.prepareUrl(testMessage), payload);
             request.setJsonHeaders(config.prepareHeaders(testMessage));
             request.setIgnoreSsl(config.getIgnoreSsl());
             request.setUseChunkedMode(config.getChunkedMode());
+            request.setRequestMethod(config.getRequestMethod());
 
             String result = request.execute();
             if (!Objects.equals(result, Request.RESULT_SUCCESS)) {
@@ -358,7 +380,7 @@ public class ForwardingConfigDialog {
             if (config.getAttachmentUploadEnabled()) {
                 String headers = config.prepareAttachmentHeaders(testMessage);
                 BinaryRequest binReq = new BinaryRequest(
-                        config.getAttachmentUrl(),
+                        config.prepareAttachmentUrl(testMessage),
                         config.getAttachmentMethod(),
                         TEST_PNG,
                         "image/png");

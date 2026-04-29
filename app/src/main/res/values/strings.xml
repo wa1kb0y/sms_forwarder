@@ -21,6 +21,7 @@
     <string name="label_number_retries">Number of retries</string>
     <string name="label_sender">Sender</string>
     <string name="label_url">Webhook URL</string>
+    <string name="label_request_method">HTTP Method</string>
     <string name="label_json_template">Json Payload Template</string>
     <string name="label_json_headers">Headers</string>
     <string name="label_sim_slot">Sim Slot</string>

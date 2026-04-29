@@ -341,7 +341,7 @@ public class MmsBroadcastReceiver extends ContentObserver {
 
         new Thread(() -> {
             for (int attempt = 0; attempt <= maxRetries; attempt++) {
-                Request request = new Request(config.getUrl(), strMessage);
+                Request request = new Request(config.prepareUrl(message), strMessage);
                 request.setJsonHeaders(config.prepareHeaders(message));
                 request.setIgnoreSsl(config.getIgnoreSsl());
                 request.setUseChunkedMode(config.getChunkedMode());
@@ -371,7 +371,7 @@ public class MmsBroadcastReceiver extends ContentObserver {
         new Thread(() -> {
             for (int attempt = 0; attempt <= maxRetries; attempt++) {
                 BinaryRequest request = new BinaryRequest(
-                        config.getAttachmentUrl(),
+                        config.prepareAttachmentUrl(message),
                         config.getAttachmentMethod(),
                         message.mmsAttachmentData,
                         message.mmsAttachmentType);

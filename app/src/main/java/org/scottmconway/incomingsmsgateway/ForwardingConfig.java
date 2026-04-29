@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
-import java.util.regex.Matcher;
 
 public class ForwardingConfig {
     final private Context context;
@@ -30,6 +29,7 @@ public class ForwardingConfig {
     private static final String KEY_ATTACHMENT_URL = "attachment_url";
     private static final String KEY_ATTACHMENT_METHOD = "attachment_method";
     private static final String KEY_ATTACHMENT_HEADERS = "attachment_headers";
+    private static final String KEY_REQUEST_METHOD = "request_method";
 
     private String key;
     private String sender;
@@ -43,6 +43,7 @@ public class ForwardingConfig {
     private boolean isSmsEnabled = true;
     private boolean attachmentUploadEnabled = false;
     private String attachmentUrl = "";
+    private String requestMethod = "POST";
     private String attachmentMethod = "PUT";
     private String attachmentHeaders = getDefaultAttachmentHeaders();
 
@@ -122,6 +123,14 @@ public class ForwardingConfig {
         this.chunkedMode = chunkedMode;
     }
 
+    public String getRequestMethod() {
+        return this.requestMethod;
+    }
+
+    public void setRequestMethod(String requestMethod) {
+        this.requestMethod = requestMethod;
+    }
+
     public boolean getIsSmsEnabled() {
         return this.isSmsEnabled;
     }
@@ -197,6 +206,7 @@ public class ForwardingConfig {
             json.put(KEY_RETRIES_NUMBER, this.retriesNumber);
             json.put(KEY_IGNORE_SSL, this.ignoreSsl);
             json.put(KEY_CHUNKED_MODE, this.chunkedMode);
+            json.put(KEY_REQUEST_METHOD, this.requestMethod);
             json.put(KEY_IS_SMS_ENABLED, this.isSmsEnabled);
             json.put(KEY_ATTACHMENT_UPLOAD_ENABLED, this.attachmentUploadEnabled);
             json.put(KEY_ATTACHMENT_URL, this.attachmentUrl);
@@ -266,6 +276,10 @@ public class ForwardingConfig {
                     } catch (JSONException ignored) {
                     }
 
+                    if (json.has(KEY_REQUEST_METHOD)) {
+                        config.setRequestMethod(json.getString(KEY_REQUEST_METHOD));
+                    }
+
                     if (json.has(KEY_ATTACHMENT_UPLOAD_ENABLED)) {
                         config.setAttachmentUploadEnabled(json.getBoolean(KEY_ATTACHMENT_UPLOAD_ENABLED));
                     }
@@ -301,22 +315,18 @@ public class ForwardingConfig {
 
     private String applyPlaceholders(String template, WebhookMessage message) {
         return template
-                .replaceAll("%messageType%", message.messageType)
-                .replaceAll("%from%", message.senderPhoneNumber)
-                .replaceAll("%fromName%", message.senderName)
-                .replaceAll("%sentStamp%", String.valueOf(message.timestamp))
-                .replaceAll("%receivedStamp%", String.valueOf(System.currentTimeMillis()))
-                .replaceAll("%sim%", message.simSlotName)
-                .replaceAll("%text%",
-                        Matcher.quoteReplacement(StringEscapeUtils.escapeJson(message.messageContent)))
-                .replaceAll("%mmsSubject%",
-                        Matcher.quoteReplacement(StringEscapeUtils.escapeJson(message.mmsSubject)))
-                .replaceAll("%mmsAttachmentB64%",
-                        Matcher.quoteReplacement(message.mmsAttachmentB64))
-                .replaceAll("%mmsAttachmentType%",
-                        Matcher.quoteReplacement(message.mmsAttachmentType))
-                .replaceAll("%mmsFilename%",
-                        Matcher.quoteReplacement(message.getMmsFilename()));
+                .replace("%messageType%", message.messageType)
+                .replace("%fromName%", message.senderName)
+                .replace("%from%", message.senderPhoneNumber)
+                .replace("%sentStamp%", String.valueOf(message.timestamp))
+                .replace("%receivedStamp%", String.valueOf(System.currentTimeMillis()))
+                .replace("%sim%", message.simSlotName)
+                .replace("%text%", StringEscapeUtils.escapeJson(message.messageContent))
+                .replace("%mmsSubject%", StringEscapeUtils.escapeJson(message.mmsSubject))
+                .replace("%mmsAttachmentB64%", message.mmsAttachmentB64)
+                .replace("%mmsAttachmentType%", message.mmsAttachmentType)
+                .replace("%mmsFilename%", message.getMmsFilename())
+                .replace("%timestamp%", String.valueOf(System.currentTimeMillis()));
     }
 
     public String prepareMessage(WebhookMessage message) {
@@ -325,6 +335,14 @@ public class ForwardingConfig {
 
     public String prepareHeaders(WebhookMessage message) {
         return applyPlaceholders(this.getHeaders(), message);
+    }
+
+    public String prepareUrl(WebhookMessage message) {
+        return applyPlaceholders(this.getUrl(), message);
+    }
+
+    public String prepareAttachmentUrl(WebhookMessage message) {
+        return applyPlaceholders(this.getAttachmentUrl(), message);
     }
 
     public String prepareAttachmentHeaders(WebhookMessage message) {

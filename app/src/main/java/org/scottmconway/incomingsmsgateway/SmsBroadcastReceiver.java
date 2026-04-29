@@ -174,12 +174,13 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 .build();
 
         Data data = new Data.Builder()
-                .putString(RequestWorker.DATA_URL, config.getUrl())
+                .putString(RequestWorker.DATA_URL, config.prepareUrl(message))
                 .putString(RequestWorker.DATA_TEXT, strMessage)
                 .putString(RequestWorker.DATA_HEADERS, config.prepareHeaders(message))
                 .putBoolean(RequestWorker.DATA_IGNORE_SSL, config.getIgnoreSsl())
                 .putBoolean(RequestWorker.DATA_CHUNKED_MODE, config.getChunkedMode())
                 .putInt(RequestWorker.DATA_MAX_RETRIES, config.getRetriesNumber())
+                .putString(RequestWorker.DATA_REQUEST_METHOD, config.getRequestMethod())
                 .build();
 
         WorkRequest workRequest =

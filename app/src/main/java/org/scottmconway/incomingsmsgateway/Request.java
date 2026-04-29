@@ -30,6 +30,7 @@ public class Request {
     private final String payload;
     private boolean ignoreSsl = false;
     private boolean useChunkedMode = true;
+    private String requestMethod = "POST";
     private String error = null;
 
     private HttpURLConnection connection;
@@ -96,6 +97,10 @@ public class Request {
         this.useChunkedMode = useChunkedMode;
     }
 
+    public void setRequestMethod(String method) {
+        this.requestMethod = method;
+    }
+
     @SuppressLint({"AllowAllHostnameVerifier"})
     public String execute() {
         if (this.error != null) {
@@ -115,6 +120,7 @@ public class Request {
                 }
             }
 
+            this.connection.setRequestMethod(this.requestMethod);
             this.connection.setDoOutput(true);
             if (this.useChunkedMode) {
                 this.connection.setChunkedStreamingMode(0);

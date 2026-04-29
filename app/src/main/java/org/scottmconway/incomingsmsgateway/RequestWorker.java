@@ -14,6 +14,7 @@ public class RequestWorker extends Worker {
     public final static String DATA_IGNORE_SSL = "IGNORE_SSL";
     public final static String DATA_MAX_RETRIES = "MAX_RETRIES";
     public final static String DATA_CHUNKED_MODE = "CHUNKED_MODE";
+    public final static String DATA_REQUEST_METHOD = "REQUEST_METHOD";
 
     public RequestWorker(
             @NonNull Context context,
@@ -35,11 +36,14 @@ public class RequestWorker extends Worker {
         String headers = getInputData().getString(DATA_HEADERS);
         boolean ignoreSsl = getInputData().getBoolean(DATA_IGNORE_SSL, false);
         boolean useChunkedMode = getInputData().getBoolean(DATA_CHUNKED_MODE, true);
+        String requestMethod = getInputData().getString(DATA_REQUEST_METHOD);
+        if (requestMethod == null) requestMethod = "POST";
 
         Request request = new Request(url, text);
         request.setJsonHeaders(headers);
         request.setIgnoreSsl(ignoreSsl);
         request.setUseChunkedMode(useChunkedMode);
+        request.setRequestMethod(requestMethod);
 
         String result = request.execute();
 
